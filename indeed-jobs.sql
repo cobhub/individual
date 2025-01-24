@@ -49,31 +49,65 @@ ORDER BY distinct_title_count DESC;
 -- 9 Find the name of each company and its average star rating
 -- for all companies that have more than 5000 reviews across
 -- all locations. How many companies are there with more that
--- 5000 reviews across all locations? 126
-SELECT DISTINCT(title) AS unique_co, 
+-- 5000 reviews across all locations? 131
+SELECT DISTINCT(title) AS unique_co, company,
 AVG(star_rating) AS avg_rating,
-location,
-review_count
+location, review_count
 FROM data_analyst_jobs
-WHERE review_count > 5000
-GROUP BY title, location, review_count;
+GROUP BY title, location, review_count,company
+HAVING SUM(review_count) > 5000
+ORDER BY avg_rating DESC;
 -- 10 Add the code to order the query in #9 from highest to lowest average
 -- star rating. Which company with more than 5000 reviews across all locations
 -- in the dataset has the highest star rating? What is that rating?
 -- NIKE, 4.2
-SELECT company, 
-AVG(star_rating) AS avg_rating,
-location,
-review_count
+SELECT company, location,
+AVG(star_rating) AS avg_rating, SUM(review_count) AS total_reviews
 FROM data_analyst_jobs
-WHERE review_count > 5000
 GROUP BY company, location, review_count
+HAVING SUM(review_count) > 5000
 ORDER BY avg_rating DESC;
--- 11 Find all the job titles that contain the word ‘Analyst’.
--- How many different job titles are there? 1,669
-SELECT COUNT(title) as analyst_jobs
+
+SELECT company, location,
+AVG(star_rating) AS avg_rating, review_count
 FROM data_analyst_jobs
-WHERE title ILIKE '%analyst%';
+GROUP BY company, location, review_count
+HAVING SUM(review_count) > 5000
+ORDER BY avg_rating DESC;
+
+--Madi's function ~> i was missing SUM()
+-- SELECT 
+--     company,location,
+--     SUM(review_count) AS total_reviews,
+--     AVG(star_rating) AS avg_star_rating
+-- FROM data_analyst_jobs
+-- GROUP BY 
+--     company, star_rating,location
+-- HAVING 
+--     SUM(review_count) > 5000
+-- 	ORDER BY star_rating DESC;
+
+-- 11 Find all the job titles that contain the word ‘Analyst’.
+-- How many different job titles are there? 754
+
+SELECT COUNT(*)
+FROM(
+SELECT title,COUNT (DISTINCT title) as analyst_jobs
+FROM data_analyst_jobs
+WHERE title ILIKE '%analyst%'
+GROUP BY title);
+
+--Madi's
+-- SELECT 
+--     title,
+--     COUNT(DISTINCT title) AS analyst_jobs
+-- FROM 
+--     data_analyst_jobs
+-- WHERE 
+--     title LIKE '%Analyst%'
+-- GROUP BY 
+--     title;
+
 -- 12 How many different job titles do not contain either the word Analyst’
 -- or the word ‘Analytics’? What word do these positions have in common? 4
 --Tableau!
