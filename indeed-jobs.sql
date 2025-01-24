@@ -12,7 +12,7 @@ LIMIT 10;
 -- How many are there in either Tennessee or Kentucky? 6
 SELECT COUNT(location)
 FROM data_analyst_jobs
-WHERE location ILIKE 'TN' OR location ILIKE 'KY'
+WHERE location ILIKE '%TN%' OR location ILIKE '%KY%'
 GROUP BY location;
 -- 4 How many postings in Tennessee have a star rating above 4? 3
 SELECT COUNT(location)
@@ -32,7 +32,7 @@ SELECT state, AVG(avg_rating) AS avg_of_avg
 FROM (
     SELECT location AS state, AVG(star_rating) AS avg_rating
     FROM data_analyst_jobs
-	WHERE star_rating IS NOT NULL
+	WHERE star_rating IS NOT NULL AND star_rating IS NOT NULL
     GROUP BY location)
 AS subquery
 GROUP BY state
@@ -40,7 +40,7 @@ ORDER BY avg_of_avg DESC;
 -- 7 Select unique job titles from the data_analyst_jobs table.
 -- How many are there? 881
 SELECT COUNT (DISTINCT(title))
-FROM data_analyst_jobs;
+FROM data_analyst_jobs
 -- 8 How many unique job titles are there for California companies? 230
 SELECT location, COUNT(DISTINCT title) AS distinct_title_count
 FROM data_analyst_jobs
@@ -50,22 +50,23 @@ ORDER BY distinct_title_count DESC;
 -- for all companies that have more than 5000 reviews across
 -- all locations. How many companies are there with more that
 -- 5000 reviews across all locations? 131
-SELECT DISTINCT(title) AS unique_co, company,
-AVG(star_rating) AS avg_rating,
-location, review_count
+SELECT COUNT(company), company,
+AVG(star_rating) AS avg_rating
 FROM data_analyst_jobs
-GROUP BY title, location, review_count,company
-HAVING SUM(review_count) > 5000
+WHERE company IS NOT NULL
+GROUP BY company,review_count
+HAVING SUM(review_count) >5000
 ORDER BY avg_rating DESC;
 -- 10 Add the code to order the query in #9 from highest to lowest average
 -- star rating. Which company with more than 5000 reviews across all locations
 -- in the dataset has the highest star rating? What is that rating?
 -- NIKE, 4.2
-SELECT company, location,
-AVG(star_rating) AS avg_rating, SUM(review_count) AS total_reviews
+SELECT COUNT(company), company,
+AVG(star_rating) AS avg_rating
 FROM data_analyst_jobs
-GROUP BY company, location, review_count
-HAVING SUM(review_count) > 5000
+WHERE company IS NOT NULL
+GROUP BY company,review_count
+HAVING SUM(review_count) >5000
 ORDER BY avg_rating DESC;
 
 SELECT company, location,
@@ -88,7 +89,7 @@ ORDER BY avg_rating DESC;
 -- 	ORDER BY star_rating DESC;
 
 -- 11 Find all the job titles that contain the word ‘Analyst’.
--- How many different job titles are there? 754
+-- How many different job titles are there? 774
 
 SELECT COUNT(*)
 FROM(
@@ -122,19 +123,16 @@ AND title NOT ILIKE '%analytics%';
 -- >>Order your results so that the domain with the greatest number
 -- of hard to fill jobs is at the top.
 -- >>Which three industries are in the top 4 on this list?
---Banks and Financial Services, Consulting and Business Services,
--- Internet and Software, Education and Schools
+--Internet and Software, Banks and Financial Services,
+--Consulting and Business Services, Health Care
 -- How many jobs have been listed for more than 3 weeks for each of the top 4?
---B&FS: 2, C&BS:2, IE&S:1, E&S:1
 SELECT
-domain AS industry,
-COUNT(domain) AS domain_count,
-days_since_posting,
-skill,
-title
+domain,
+COUNT(title) AS hard_to_fill
 FROM data_analyst_jobs
 WHERE skill ILIKE '%sql%'
 AND days_since_posting > 21
 AND domain IS NOT NULL
-GROUP BY domain, title, skill, days_since_posting
-ORDER BY domain_count DESC;
+GROUP BY domain
+ORDER BY hard_to_fill DESC
+LIMIT 4;
